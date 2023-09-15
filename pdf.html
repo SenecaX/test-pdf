@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Test</title>
+  <script>
+    async function downloadPdf() {
+      const query = `
+        query {
+          generateChart
+        }
+      `;
+  
+      const response = await fetch('http://localhost:3000/graphql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query }),
+      });
+  
+      const result = await response.json();
+      const pdfBase64 = result.data.generateChart;
+  
+      const link = document.createElement('a');
+      link.href = 'data:application/pdf;base64,' + pdfBase64;
+      link.download = 'example.pdf';
+      link.click();
+    }
+  </script>
+  
+</head>
+<body>
+  <button onclick="downloadPdf()">Download PDF</button>
+</body>
+</html>

@@ -3,5 +3,6 @@
 # ------------------------------------------------------
 
 type Query {
-  sayHello: String!
+  generatePdfWithImageCanvas: String!
+  generateChart: String!
 }
