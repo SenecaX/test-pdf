@@ -1,8 +1,9 @@
+/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
-import { FooResolver } from './test.resolver';
+import { PDFResolver } from './pdf.resolver';
 
 @Module({
   imports: [
@@ -12,6 +13,6 @@ import { FooResolver } from './test.resolver';
       autoSchemaFile: join(process.cwd(), 'src/pdf.schema.graphql'),
     }),
   ],
-  providers: [FooResolver],
+  providers: [PDFResolver],
 })
 export class AppModule {}

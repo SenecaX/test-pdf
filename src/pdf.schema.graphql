@@ -2,7 +2,23 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type PDFResponse {
+  data: String!
+  message: String
+}
+
 type Query {
-  generatePdfWithImageCanvas: String!
-  generateChart: String!
+  getPDF: PDFResponse!
+}
+
+type Mutation {
+  generatePDF(input: GeneratePDFInput!): PDFResponse!
+}
+
+input GeneratePDFInput {
+  name: String
+  description: String
+  age: Int
+  title: String
+  image: String
 }
