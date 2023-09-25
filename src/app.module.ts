@@ -4,6 +4,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { PDFResolver } from './pdf.resolver';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -13,6 +14,6 @@ import { PDFResolver } from './pdf.resolver';
       autoSchemaFile: join(process.cwd(), 'src/pdf.schema.graphql'),
     }),
   ],
-  providers: [PDFResolver],
+  providers: [PDFResolver, AppService], // Add AppService here
 })
 export class AppModule {}

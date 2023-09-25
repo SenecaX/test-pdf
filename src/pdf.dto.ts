@@ -1,6 +1,4 @@
 /* eslint-disable prettier/prettier */
-// pdf.dto.ts
-
 import { ObjectType, Field, InputType, Int } from '@nestjs/graphql';
 
 @InputType()
@@ -18,9 +16,12 @@ export class GeneratePDFInput {
   @Field({ nullable: true })
   title?: string;
 
-  // Assuming you'll send the image as a base64 string, but you might change this if you're sending it differently
   @Field({ nullable: true })
   image?: string; 
+
+  // Added the previousPDF field to store the base64 encoded previous PDF
+  @Field({ nullable: true })
+  previousPDF?: string;
 }
 
 @ObjectType()

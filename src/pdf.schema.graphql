@@ -12,13 +12,50 @@ type Query {
 }
 
 type Mutation {
-  generatePDF(input: GeneratePDFInput!): PDFResponse!
+  generateAndFetchPDF(input: CreateReportDto!): String!
 }
 
-input GeneratePDFInput {
-  name: String
-  description: String
-  age: Int
-  title: String
-  image: String
+input CreateReportDto {
+  user_id: String!
+  project_id: String!
+  date_range: String!
+  page_configs: PageConfigInput!
+}
+
+input PageConfigInput {
+  report_title: String!
+  project_title: String!
+  adresse: String!
+  author_name: String!
+  project_image: String!
+  company_logo: String!
+  page2_project_title: String
+  page2_project_date: String
+  page2_project_type: String
+  page2_project_zone: String
+  page2_project_capteur_actif: String
+  page2_project_adresse: String
+  page2_project_image: String
+  page2_project_plan1: String
+  page2_project_plan2: String
+  page2_project_plan3: String
+  page2_project_description: String
+  map_coordinate_01: String
+  map_coordinate_02: String
+  page_title: String
+  plan1_name: String
+  plan1_description: String
+  plan1_image: String
+  plan2_name: String
+  plan2_description: String
+  plan2_image: String
+  plan3_name: String
+  plan3_description: String
+  plan3_image: String
+  plan4_name: String
+  plan4_image: String
+  plan5_name: String
+  plan5_image: String
+  plan6_name: String
+  plan6_image: String
 }

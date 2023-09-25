@@ -1,10 +1,14 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable prefer-const */
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prettier/prettier */
 // pdf.resolver.ts
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const PDFDocument = require('pdfkit');
+import { AppService } from './app.service';
+import { CreateReportDto } from './dto/create-report.dto';
 import { GeneratePDFInput, PDFResponse } from './pdf.dto';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
@@ -19,57 +23,28 @@ export class PDFResolver {
             message: 'Sample PDF fetched!'
         };
     }
+    constructor(private readonly appService: AppService) {}
 
-    @Mutation(() => PDFResponse)
-    async generatePDF(
-        @Args('input') input: GeneratePDFInput
-    ): Promise<PDFResponse> {
-        const { name, description, age, title, image } = input;
 
-        // console.log("input", input)
+    
+  @Mutation(() => String)
+  async generateAndFetchPDF(
+    @Args('input') input: CreateReportDto,
+  ): Promise<string> {
+    try {
+      // Generate the PDF
+      const pdfBuffer = await this.appService.generatePDF(input);
+      console.log('Generated PDF Buffer:', pdfBuffer);
 
-        // Generate PDF with pdfkit
-        const doc = new PDFDocument();
+      // Encode the generated PDF to base64
+      const base64PDF = pdfBuffer.toString('base64');
 
-        // eslint-disable-next-line prefer-const
-        let buffers = [];
-        doc.on('data', buffers.push.bind(buffers));
-
-        doc.text(`Name: ${name}`);
-        doc.text(`Description: ${description}`);
-        doc.text(`Age: ${age}`);
-
-                if (title) {
-            doc.text(`Title: ${title}`);
-        }
-
-        if (image) {
-            // Here you'll need logic to process and add the image to the PDF.
-            // This is just a sample if the image is a base64 string:
-            const imageBuffer = Buffer.from(image, 'base64');
-            doc.image(imageBuffer, {
-                fit: [250, 300],  // This is just an example size.
-                align: 'center',
-                valign: 'center'
-            });
-        }
-        
-        doc.end();
-
-        return new Promise((resolve, reject) => {
-            doc.on('end', () => {
-                const pdfData = Buffer.concat(buffers);
-                const encodedPDF = pdfData.toString('base64');
-
-                resolve({
-                    data: encodedPDF,
-                    message: 'PDF Generated successfully!'
-                });
-            });
-
-            doc.on('error', (err: any) => {
-                reject(err);
-            });
-        });
+      return base64PDF;
+    } catch (error) {
+      console.error('Error in resolver:', error);
+      throw new Error('Failed to generate and fetch PDF');
     }
+  }
+
+
 }
