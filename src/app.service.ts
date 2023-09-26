@@ -81,6 +81,183 @@ async captureLeafletMap(data: CreateReportDto, zoom: number): Promise<Buffer> {
     return screenshot;
 }
 
+// chart-capture.ts
+async captureChartScreenshot(chartData: any): Promise<Buffer> {
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
+  const sensorData = {
+    "getMetricsBySensorsIdList": [
+        {
+            "sensor_id": "22921d2f-2c07-472a-aba5-b71419344228",
+            "measurement": "DELTA",
+            "metrics": [
+                {
+                    "field": "GAP",
+                    "VStartBrut": 22.8,
+                    "VLastBrut": 29,
+                    "VLastDelta": 6.199999999999999,
+                    "metrics": [
+                        {
+                            "value": 24,
+                            "time": "2023-09-08T12:57:28.956Z",
+                            "delta": 1.1999999999999993,
+                            "__typename": "MetricValue"
+                        },
+                        {
+                            "value": 23,
+                            "time": "2023-09-08T13:34:56Z",
+                            "delta": 0.1999999999999993,
+                            "__typename": "MetricValue"
+                        },
+                        {
+                            "value": 22,
+                            "time": "2023-09-09T12:57:28.956Z",
+                            "delta": -0.8000000000000007,
+                            "__typename": "MetricValue"
+                        },
+                        {
+                            "value": 23,
+                            "time": "2023-09-09T13:34:56Z",
+                            "delta": 0.1999999999999993,
+                            "__typename": "MetricValue"
+                        }
+                    ],
+                    "__typename": "MeasureType"
+                },
+                {
+                    "field": "TEMPERATURE",
+                    "VStartBrut": 19.1,
+                    "VLastBrut": 34,
+                    "VLastDelta": 14.899999999999999,
+                    "metrics": [
+                        {
+                            "value": 22.5,
+                            "time": "2023-09-08T12:34:56Z",
+                            "delta": 3.3999999999999986,
+                            "__typename": "MetricValue"
+                        },
+                        {
+                            "value": 30,
+                            "time": "2023-09-08T13:04:28.956Z",
+                            "delta": 10.899999999999999,
+                            "__typename": "MetricValue"
+                        },
+                        {
+                            "value": 22.5,
+                            "time": "2023-09-09T12:34:56Z",
+                            "delta": 3.3999999999999986,
+                            "__typename": "MetricValue"
+                        },
+                        {
+                            "value": 23,
+                            "time": "2023-09-09T13:04:28.956Z",
+                            "delta": 3.8999999999999986,
+                            "__typename": "MetricValue"
+                        }
+                    ],
+                    "__typename": "MeasureType"
+                }
+            ],
+            "__typename": "Metrics"
+        }
+    ]
+};
+
+  // Updated dataset
+  const sensorMetrics = sensorData.getMetricsBySensorsIdList[0].metrics;
+
+  const chartData1 = {
+    labels: sensorMetrics[0].metrics.map(point => new Date(point.time).toLocaleString('fr-FR')), // Using French Locale as suggested previously
+    datasets: sensorMetrics.map(metric => ({
+      label: metric.field,
+      data: metric.metrics.map(point => point.value),
+      fill: false,
+      borderColor: metric.field === "GAP" ? 'rgb(75, 192, 192)' : 'rgb(255, 99, 132)',
+      tension: 0.1,
+      yAxisID: metric.field === "GAP" ? 'y-axis-gap' : 'y-axis-temperature'
+    }))
+  };
+// Replace the sampleChartOptions with generatedChartOptions while retaining some sample properties
+const chartOptions = {
+  scales: {
+    x: {
+        type: 'category',
+        title: {
+            display: true,
+            text: 'Date & Time'
+        }
+    },
+    'y-axis-gap': {
+        type: 'linear',
+        position: 'left',
+        title: {
+            display: true,
+            text: 'GAP Values'
+        }
+    },
+    'y-axis-temperature': {
+        type: 'linear',
+        position: 'right',
+        title: {
+            display: true,
+            text: 'Temperature Values'
+        },
+        grid: {
+            drawOnChartArea: false, // only want the grid lines for one axis to show up
+        }
+    }
+  },
+  plugins: {
+    legend: {
+        display: true,
+        position: 'top'
+    }
+  }
+};
+
+
+
+
+  await page.setContent(`
+      <html>
+          <body>
+              <canvas id="myChart" width="2107" height="765"></canvas>
+              <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+              <script>
+                  const ctx = document.getElementById('myChart').getContext('2d');
+                  const chart = new Chart(ctx, {
+                      type: 'line',
+                      data: ${JSON.stringify(chartData1)},
+                      options: ${JSON.stringify(chartOptions)}
+                  });
+                  // This flag will be set to true once the chart is fully rendered
+                  window.chartIsRendered = false;
+                  function checkRenderStatus() {
+                      if (chart.isDatasetVisible(0)) { // A simple condition to check if the dataset is visible
+                          window.chartIsRendered = true;
+                      } else {
+                          requestAnimationFrame(checkRenderStatus);
+                      }
+                  }
+                  checkRenderStatus();
+              </script>
+          </body>
+      </html>
+  `);
+
+  // Wait until the chart is rendered
+  await page.waitForFunction(() => (window as any).chartIsRendered);
+
+  const chartElement = await page.$('#myChart');
+  const screenshot = await chartElement.screenshot() as unknown as Buffer;
+
+  await browser.close();
+
+  return screenshot;
+}
+
+
+
 
   async generatePDFintroduction(doc: any, data: CreateReportDto): Promise<void> {
     // No need to recreate the `doc` object, just use the one passed as an argument
@@ -384,7 +561,46 @@ if (data.page_configs.plan6_name) {
     }
 }
 
+async generatePDFlinechart(doc: any, chartData: any): Promise<void> {
+  // embedImage function as provided earlier...
+  const embedImage = async (input: string | Buffer, x: number, y: number, boxWidth: number, boxHeight: number) => {
+      let imageBuffer: Buffer;
 
+      try {
+          if (typeof input === 'string') {
+              const imageResponse = await axios.get(input, { responseType: 'arraybuffer' });
+              imageBuffer = Buffer.from(imageResponse.data, 'binary');
+          } else {
+              imageBuffer = input;
+          }
+
+          const { width: imgWidth, height: imgHeight } = sizeOf(imageBuffer);
+
+          const aspectRatio = imgWidth / imgHeight;
+          let imgFinalWidth: number, imgFinalHeight: number;
+
+          if (imgWidth / boxWidth > imgHeight / boxHeight) {
+              imgFinalWidth = boxWidth;
+              imgFinalHeight = boxWidth / aspectRatio;
+          } else {
+              imgFinalHeight = boxHeight;
+              imgFinalWidth = boxHeight * aspectRatio;
+          }
+
+          const xOffset = (boxWidth - imgFinalWidth) / 2;
+          const yOffset = (boxHeight - imgFinalHeight) / 2;
+
+          doc.image(imageBuffer, x + xOffset, y + yOffset, { width: imgFinalWidth, height: imgFinalHeight });
+      } catch (error) {
+          console.error('Error processing or embedding image:', error);
+      }
+  };
+
+  const chartScreenshot = await this.captureChartScreenshot(chartData);
+  
+  // Use the embedImage function to embed the chart screenshot in the document.
+  await embedImage(chartScreenshot, 214, 907, 2107, 765);
+}
 
 async generatePDF(data: CreateReportDto): Promise<Buffer> {
   return new Promise(async (resolve, reject) => {
@@ -410,8 +626,10 @@ async generatePDF(data: CreateReportDto): Promise<Buffer> {
       await this.generatePDFprojectpage(doc, data);
       doc.addPage({ size: customPageSize }); // This starts a new page
       await this.generatePDFlocalisation(doc, data);
-      doc.addPage({ size: customPageSize }); // This starts a new page
-
+      doc.addPage({ size: customPageSize });
+      await this.generatePDFlinechart(doc, data);
+      // This starts a new page
+  
       
       // If you have more functions like generatePDFintroduction, you can call them sequentially here.
 
