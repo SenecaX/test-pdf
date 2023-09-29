@@ -58,4 +58,40 @@ input PageConfigInput {
   plan5_image: String
   plan6_name: String
   plan6_image: String
+  page_sensor_title: String
+  sensor_analyse_title: String
+  plans: [PlanInput!]
+  sensorDetails: [SensorDetailInput!]
+  sensorAnalyse: [SensorAnalyseInput!]
+}
+
+input PlanInput {
+  name: String!
+  image: String!
+}
+
+input SensorDetailInput {
+  zone: String!
+  name: String!
+  date: String!
+  image1: String!
+  image2: String!
+}
+
+input SensorAnalyseInput {
+  zone: String!
+  legend: String!
+  commentaire: String!
+  name1: String!
+  date1: String!
+  image1: String!
+  name2: String!
+  date2: String!
+  image2: String!
+  name3: String!
+  date3: String!
+  image3: String!
+  name4: String!
+  date4: String!
+  image4: String!
 }

@@ -1,5 +1,83 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable prettier/prettier */
 import { InputType, Field } from '@nestjs/graphql';
+@InputType()
+export class SensorDetailInput {
+  @Field()
+  zone: string;
+
+  @Field()
+  name: string;
+
+  @Field()
+  date: string;
+
+  @Field()
+  image1: string;
+
+  @Field()
+  image2: string;
+
+}
+
+@InputType()
+export class SensorAnalyseInput {
+  @Field()
+  zone: string;
+
+  @Field()
+  legend: string;
+
+  @Field()
+  commentaire: string;
+
+  @Field()
+  name1: string;
+
+  @Field()
+  date1: string;
+
+  @Field()
+  image1: string;
+
+  @Field()
+  name2: string;
+
+  @Field()
+  date2: string;
+
+  @Field()
+  image2: string;
+
+  @Field()
+  name3: string;
+
+  @Field()
+  date3: string;
+
+  @Field()
+  image3: string;
+
+  @Field()
+  name4: string;
+
+  @Field()
+  date4: string;
+
+  @Field()
+  image4: string;
+}
+
+@InputType()
+export class PlanInput {
+  @Field()
+  name: string;
+
+  @Field()
+  image: string;
+  
+}
 
 @InputType()
 export class PageConfigInput {
@@ -112,6 +190,21 @@ export class PageConfigInput {
 
   @Field({ nullable: true })
   plan6_image?: string;
+
+  @Field({ nullable: true })
+  page_sensor_title?: string;
+
+  @Field({ nullable: true })
+  sensor_analyse_title?: string
+
+  @Field(type => [PlanInput], { nullable: true })
+  plans?: PlanInput[];
+
+  @Field(type => [SensorDetailInput], { nullable: true })
+  sensorDetails?: SensorDetailInput[];
+  
+  @Field(type => [SensorAnalyseInput], { nullable: true })
+  sensorAnalyse?: SensorAnalyseInput[];
 
 
 }
